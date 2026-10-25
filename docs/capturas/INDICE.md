@@ -89,3 +89,4 @@
 | 96 | 96_swagger_estudios_put.png | 36 | Swagger: PUT /api/estudios/{idProf}/{ccPer} (204) |
 | 97 | 97_swagger_estudios_delete.png | 36 | Swagger: DELETE /api/estudios/{idProf}/{ccPer} (204) |
 | 98 | 98_swagger_estudios_get_id_404.png | 36 | Swagger: GET /api/estudios/{idProf}/{ccPer} tras eliminar (404) |
+| 99 | 99_docker_rosetta_activado.png | 4 | Docker Desktop › Settings › General › Virtual Machine Options con Rosetta activado (Apply aplicado) |

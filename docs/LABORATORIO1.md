@@ -18,10 +18,12 @@ Procedimiento seguido desde cero en un Mac con chip Apple Silicon. Cada paso lle
 1. Información del sistema: `sw_vers` y `uname -m` (arm64). ![](capturas/01_chip_mac.png)
 2. Homebrew y Git: `brew --version` (7.0.10) y `git --version` (2.54.0). ![](capturas/02_homebrew_git.png)
 3. Docker Desktop: `docker version`. ![](capturas/03_docker_version.png)
-4. SDK de .NET 7: se instaló el `.pkg` oficial de 7.0.410 para arm64. `dotnet --list-sdks`. ![](capturas/04_dotnet_sdks.png)
-5. Herramienta EF Core: `dotnet tool install --global dotnet-ef --version 7.0.20`. ![](capturas/05_dotnet_ef.png)
-6. sqlcmd: `brew install sqlcmd`. ![](capturas/06_sqlcmd_version.png)
-7. VS Code con las extensiones C# Dev Kit y SQL Server (mssql) instaladas. ![](capturas/10_vscode_explorer_proyecto.png)
+4. Docker Desktop con Rosetta: en Settings › General › Virtual Machine Options se activó *Use Rosetta for x86_64/amd64 emulation on Apple Silicon* y se aplicó con Apply. ![](capturas/99_docker_rosetta_activado.png)
+
+5. SDK de .NET 7: se instaló el `.pkg` oficial de 7.0.410 para arm64. `dotnet --list-sdks`. ![](capturas/04_dotnet_sdks.png)
+6. Herramienta EF Core: `dotnet tool install --global dotnet-ef --version 7.0.20`. ![](capturas/05_dotnet_ef.png)
+7. sqlcmd: `brew install sqlcmd`. ![](capturas/06_sqlcmd_version.png)
+8. VS Code con las extensiones C# Dev Kit y SQL Server (mssql) instaladas. ![](capturas/10_vscode_explorer_proyecto.png)
 
 ## 2. Base de datos
 
@@ -88,5 +90,4 @@ Procedimiento seguido desde cero en un Mac con chip Apple Silicon. Cada paso lle
 
 ## Pendiente
 
-- **Docker Desktop con Rosetta** (paso del procedimiento): no se capturó. Hay que activar *Use Rosetta for x86_64/amd64 emulation on Apple Silicon* y tomar la captura.
 - **Publicación en GitHub** (repo público, push a `main`, tag `v1.0.0`): pendiente de autorización.
