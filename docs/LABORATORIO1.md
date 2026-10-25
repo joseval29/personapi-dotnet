@@ -1,15 +1,14 @@
 # Laboratorio 1 – Implementación de monolito con patrón MVC y DAO
 
-**Universidad:** [nombre de la universidad]
-**Facultad:** [nombre de la facultad]
+**Universidad:** Pontificia Universidad Javeriana
+**Facultad:** Ingeniería de Sistemas
 **Materia:** Arquitectura de Software
-**Profesor:** [nombre del profesor]
-**Integrantes:** José Eduardo Valeriano Castiblanco
-**Fecha:** [dd de mmmm de 2026]
-**Ciudad:** [ciudad]
+**Profesor:** Andrés Sánchez
+**Integrantes:** José Eduardo Valeriano Castiblanco, Jorge Andrés Fortich Ordosgoitia y Camila Beltrán Carreño
+**Fecha:** 29 de octubre de 2026
+**Ciudad:** Bogotá D.C.
 
 **Repositorio y entrega (tag v1.0.0):** https://github.com/joseval29/personapi-dotnet/tree/v1.0.0
-*(Pendiente: el tag `v1.0.0` fue eliminado; hay que volver a crearlo antes de entregar.)*
 
 ---
 
@@ -307,7 +306,7 @@ Trabajé en macOS con chip Apple Silicon. La guía del profesor está pensada pa
 - **Instalación del SDK.** El instalador de .NET 7 no quedó completo en el primer intento y hubo que reabrirlo.
 - **Docker sin Rosetta.** Sin Rosetta, la imagen de SQL Server no corre en Apple Silicon; se activó en Virtual Machine Options.
 - **Datos de prueba borrados.** Al probar DELETE de un estudio de la semilla se perdió un dato; se restauró volviendo a ejecutar `02_dml.sql`.
-- **Automatización de navegadores.** Safari no permite ejecutar JavaScript desde AppleScript sin activar una opción de desarrollador, así que los formularios se probaron en Chrome. Chrome muestra la barra "Claude comenzó a depurar este navegador" en algunas capturas.
+- **Automatización de navegadores.** Safari no permite ejecutar JavaScript desde AppleScript sin activar una opción de desarrollador, así que los formularios se probaron en Chrome.
 
 ---
 
