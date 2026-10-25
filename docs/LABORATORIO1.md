@@ -1,93 +1,340 @@
-# Laboratorio 1 — Monolito ASP.NET Core MVC con DAO (macOS, Apple Silicon)
+# Laboratorio 1 – Implementación de monolito con patrón MVC y DAO
 
-Procedimiento seguido desde cero en un Mac con chip Apple Silicon. Cada paso lleva su captura en `capturas/`, numerada según `capturas/INDICE.md`.
+**Universidad:** [nombre de la universidad]
+**Facultad:** [nombre de la facultad]
+**Materia:** Arquitectura de Software
+**Profesor:** [nombre del profesor]
+**Integrantes:** José Eduardo Valeriano Castiblanco
+**Fecha:** [dd de mmmm de 2026]
+**Ciudad:** [ciudad]
 
-## Stack
+**Repositorio y entrega (tag v1.0.0):** https://github.com/joseval29/personapi-dotnet/tree/v1.0.0
+*(Pendiente: el tag `v1.0.0` fue eliminado; hay que volver a crearlo antes de entregar.)*
 
-| Componente | Versión |
+---
+
+## 1. Marco conceptual
+
+**Arquitectura monolítica.** Un monolito es una aplicación en la que todas las funciones (interfaz, lógica de negocio y acceso a datos) se compilan y despliegan como una sola unidad. Su ventaja es la simplicidad: un solo proyecto, un solo despliegue y transacciones locales. Su desventaja es que cualquier cambio exige recompilar y desplegar todo, y que las partes crecen acopladas si no se separan con cuidado. En este laboratorio el monolito se organiza en capas para reducir ese acoplamiento.
+
+**Patrón MVC (Modelo–Vista–Controlador).** Separa la aplicación en tres responsabilidades: el *modelo* (datos y reglas), la *vista* (presentación) y el *controlador* (recibe la petición, coordina y devuelve la respuesta). En ASP.NET Core MVC, los controladores son clases que heredan de `Controller`, las vistas son archivos Razor (`.cshtml`) en `Views` y los modelos son las clases de `Models`. En este proyecto `PersonasController`, `ProfesionesController`, `EstudiosController` y `TelefonosController` atienden las pantallas de administración, y `HomeController` muestra la página de inicio.
+
+**Patrón DAO / Repository.** El DAO (*Data Access Object*), en su variante moderna de repositorio, aísla el acceso a datos detrás de una interfaz. Los controladores dependen de `IPersonaRepository` y no de EF Core directamente, así que la implementación (`PersonaRepository`) puede cambiar sin tocar la lógica de presentación. En `Program.cs`, `AddScoped<IPersonaRepository, PersonaRepository>()` hace la inyección de dependencias.
+
+**.NET y ASP.NET Core.** .NET es la plataforma de desarrollo de Microsoft. Su runtime, el **CLR** (*Common Language Runtime*), ejecuta el código compilado en lenguaje intermedio (IL) y gestiona memoria y excepciones. **.NET Framework** es la implementación original, ligada a Windows. **.NET Core** y su sucesor unificado, **.NET 5 en adelante**, es multiplataforma (Windows, macOS y Linux) y de código abierto, lo que permitió desarrollar el laboratorio en macOS con Apple Silicon. El proyecto usa **.NET 7.0.410**, versión que la guía pedía y que ya no tiene soporte de Microsoft.
+
+**Entity Framework Core y ORM.** EF Core es un ORM (*Object–Relational Mapper*): traduce consultas LINQ a SQL y convierte las filas en objetos. Existen dos enfoques. En **Code First** se escriben las clases y EF genera la base con migraciones. En **Database First** la base ya existe y EF genera las clases a partir de ella. El laboratorio usa Database First: `dotnet ef dbcontext scaffold` lee `persona_db` y genera `Persona`, `Profesion`, `Estudio`, `Telefono` y `PersonaDbContext` en `Models/Entities`.
+
+**REST.** REST modela la API como *recursos* (`/api/personas`, `/api/estudios/{idProf}/{ccPer}`) manipulados con verbos HTTP: `GET` para consultar, `POST` para crear, `PUT` para reemplazar y `DELETE` para eliminar. Los códigos de estado indican el resultado: **200** (OK con cuerpo), **201** (creado), **204** (exitoso sin cuerpo), **400** (datos inválidos) y **404** (no encontrado).
+
+**Swagger / OpenAPI 3.** OpenAPI es un estándar para describir APIs REST en un documento legible por máquinas. Swashbuckle (`Swashbuckle.AspNetCore` 6.5.0) genera ese documento y la interfaz Swagger UI, en `/swagger`, desde donde se prueban los endpoints.
+
+**SQL Server 2022 y Docker.** SQL Server 2022 Express es la edición gratuita del motor de Microsoft, con límites de tamaño y memoria. Como el laboratorio se hizo en un Mac, el motor corre en un contenedor Docker con la imagen `mcr.microsoft.com/mssql/server:2022-latest`. Esa imagen es `linux/amd64`, así que en Apple Silicon se usa la emulación de Rosetta de Docker Desktop.
+
+**DTO (Data Transfer Object).** Un DTO es un objeto que transporta datos entre capas y hacia el cliente, distinto de la entidad de base de datos. Sirve para no exponer la estructura interna de la base, para validar con atributos (`[Required]`, `[StringLength]`, `[Range]`) y para incluir campos de solo lectura como `NombrePersona` o `NombreProfesion`, que no existen en la tabla.
+
+---
+
+## 2. Diseño
+
+### 2.1 Modelo de datos
+
+La base `persona_db` tiene cuatro tablas:
+
+| Tabla | Clave primaria | Campos | Relaciones |
+|---|---|---|---|
+| `persona` | `cc` | nombre, apellido, genero (`M`/`F`), edad | 1:N con `telefono` y con `estudios` |
+| `profesion` | `id` | nom, des | 1:N con `estudios` |
+| `estudios` | (`id_prof`, `cc_per`) | fecha, univer | N:M entre `persona` y `profesion` |
+| `telefono` | `num` | oper, duenio | N:1 con `persona` mediante `duenio` |
+
+- **Persona–teléfono (1:N):** una persona puede tener varios teléfonos, y cada teléfono tiene un solo dueño (`telefono.duenio` → `persona.cc`).
+- **Persona–profesión (N:M):** una persona puede estudiar varias profesiones, y una profesión la estudian varias personas. La tabla `estudios` resuelve la relación con una llave compuesta (`id_prof`, `cc_per`), que impide registrar dos veces la misma profesión para la misma persona.
+
+Las restricciones están en `scripts/01_ddl.sql`.
+
+### 2.2 Arquitectura por capas
+
+```
+Navegador / Swagger UI
+        │
+        ▼
+Controladores MVC (PersonasController…)   Controladores API (PersonasApiController…)
+        │                                         │
+        └──────────────┬──────────────────────────┘
+                       ▼
+        Interfaces DAO (IPersonaRepository…)
+                       │
+                       ▼
+        Repositorios (PersonaRepository…)
+                       │
+                       ▼
+        EF Core (PersonaDbContext, entidades)
+                       │
+                       ▼
+        SQL Server 2022 Express (Docker, persona_db)
+```
+
+Los controladores nunca usan `PersonaDbContext` directamente: dependen de las interfaces, y solo los repositorios hablan con EF Core.
+
+### 2.3 Clases principales
+
+| Clase | Responsabilidad |
 |---|---|
-| macOS | 27.0.1 (arm64) |
-| .NET SDK | 7.0.410 |
-| Entity Framework Core | 7.0.20 (Database First) |
-| SQL Server | 2022 Express (imagen Docker `mssql/server:2022-latest`) |
-| Swagger | Swashbuckle 6.5.0 |
-| Editor | Visual Studio Code (C# Dev Kit, SQL Server (mssql)) |
+| `Persona`, `Profesion`, `Estudio`, `Telefono` | Entidades generadas por Scaffold. Mapean las tablas. |
+| `PersonaDbContext` | Contexto de EF Core, con un `DbSet` por entidad. |
+| `PersonaDto`, `ProfesionDto`, `EstudioDto`, `TelefonoDto` | DTOs con validación y campos de solo lectura. |
+| `Mappers` | Convierte entre entidades y DTOs. |
+| `I*Repository` | Contrato de acceso a datos. |
+| `*Repository` | Implementación con EF Core. |
+| `*Controller` / `*ApiController` | Controladores MVC (vistas) y REST (JSON). |
 
-## 1. Ambiente
+### 2.4 Estructura de carpetas
 
-1. Información del sistema: `sw_vers` y `uname -m` (arm64). ![](capturas/01_chip_mac.png)
-2. Homebrew y Git: `brew --version` (7.0.10) y `git --version` (2.54.0). ![](capturas/02_homebrew_git.png)
-3. Docker Desktop: `docker version`. ![](capturas/03_docker_version.png)
-4. Docker Desktop con Rosetta: en Settings › General › Virtual Machine Options se activó *Use Rosetta for x86_64/amd64 emulation on Apple Silicon* y se aplicó con Apply. ![](capturas/99_docker_rosetta_activado.png)
+```
+personapi-dotnet/                  (raíz del repositorio, git)
+├── docker-compose.yml             SQL Server 2022 Express en Docker
+├── scripts/                       01_ddl.sql y 02_dml.sql
+├── docs/                          este documento y capturas/
+└── personapi-dotnet/              proyecto ASP.NET Core MVC (net7.0)
+    ├── Controllers/               MVC y Controllers/Api (REST)
+    ├── Interfaces/                contratos DAO
+    ├── Repositories/              implementaciones DAO
+    ├── Models/Dtos/               DTOs y mappers
+    ├── Models/Entities/           entidades y PersonaDbContext (Scaffold)
+    ├── Views/                     vistas Razor
+    ├── wwwroot/                   CSS y JS estáticos
+    ├── Program.cs                 registro de servicios, EF Core y Swagger
+    └── appsettings.json           cadena de conexión PersonaDb
+```
 
-5. SDK de .NET 7: se instaló el `.pkg` oficial de 7.0.410 para arm64. `dotnet --list-sdks`. ![](capturas/04_dotnet_sdks.png)
-6. Herramienta EF Core: `dotnet tool install --global dotnet-ef --version 7.0.20`. ![](capturas/05_dotnet_ef.png)
-7. sqlcmd: `brew install sqlcmd`. ![](capturas/06_sqlcmd_version.png)
-8. VS Code con las extensiones C# Dev Kit y SQL Server (mssql) instaladas. ![](capturas/10_vscode_explorer_proyecto.png)
+### 2.5 Endpoints REST
 
-## 2. Base de datos
+| Recurso | GET lista | GET por id | POST | PUT | DELETE |
+|---|---|---|---|---|---|
+| `/api/personas` | 200 | `/{cc}`: 200 / 404 | 201 | `/{cc}`: 204 | `/{cc}`: 204 |
+| `/api/profesiones` | 200 | `/{id}`: 200 / 404 | 201 | `/{id}`: 204 | `/{id}`: 204 |
+| `/api/estudios` | 200 | `/{idProf}/{ccPer}`: 200 / 404 | 201 | `/{idProf}/{ccPer}`: 204 | `/{idProf}/{ccPer}`: 204 |
+| `/api/telefonos` | 200 | `/{num}`: 200 / 404 | 201 | `/{num}`: 204 | `/{num}`: 204 |
 
-8. `docker-compose.yml` con la imagen de SQL Server 2022 y `MSSQL_PID=Express`. ![](capturas/09_docker_compose_yml.png)
-9. `docker compose up -d` y `docker ps`; el log muestra "SQL Server is now ready for client connections". ![](capturas/08_docker_ps_ready.png)
-10. `SELECT @@VERSION` confirma **SQL Server 2022 Express Edition**. ![](capturas/07_sql_server_version.png)
-11. Scripts `01_ddl.sql` (crea `persona_db` y las cuatro tablas) y `02_dml.sql` (datos de prueba). Al final se volvió a ejecutar `02_dml.sql` para restaurar los datos iniciales. ![](capturas/38_dml_restaurado.png)
+### 2.6 Decisiones de diseño
 
-## 3. Creación del proyecto
+- **DTOs en lugar de entidades.** Las entidades de Scaffold tienen propiedades de navegación (`Estudios`, `Telefonos`) que, serializadas, crean ciclos y exponen más datos de los necesarios. Los DTOs muestran solo lo que la vista o la API necesitan y llevan las reglas de validación.
+- **Borrado en cascada manejado por el repositorio.** Las claves foráneas se crearon sin `ON DELETE CASCADE`. `PersonaRepository.DeleteAsync` quita primero los estudios y teléfonos de la persona, y `ProfesionRepository.DeleteAsync` quita los estudios de la profesión antes de eliminarla. La regla de negocio queda en la capa DAO, y la vista de confirmación lo advierte al usuario.
+- **Adaptación del modelo de MySQL a SQL Server.** Los `ENUM` se cambiaron por restricciones `CHECK` (por ejemplo, `CHECK (genero IN ('M', 'F'))`), y `TEXT` por `VARCHAR(MAX)`, porque `TEXT` está obsoleto en SQL Server.
+- **Llave compuesta en `estudios`.** En el contexto se usa `HasKey(e => new { e.IdProf, e.CcPer })`, la forma natural de representar una relación N:M.
+- **Ajustes posteriores al Scaffold.** No hizo falta cambiar nombres de propiedades ni tipos: las entidades generadas coinciden con las de la referencia.
 
-12. `git init`, `dotnet new sln` y `dotnet new mvc --framework net7.0 --no-https --auth None`. Se agregó el proyecto a la solución y se copió el `.gitignore`. ![](capturas/40_git_log_status.png)
-13. Paquetes NuGet: `Microsoft.EntityFrameworkCore` 7.0.20, `.SqlServer` 7.0.20, `.Tools` 7.0.20, `.Design` 7.0.20 y `Swashbuckle.AspNetCore` 6.5.0. ![](capturas/21_dotnet_list_package.png) ![](capturas/20_vscode_csproj.png)
+---
 
-## 4. Entidades (Database First)
+## 3. Procedimiento
 
-14. `dotnet ef dbcontext scaffold` generó `Persona`, `Profesion`, `Estudio`, `Telefono` y `PersonaDbContext` en `Models/Entities`. ![](capturas/23_scaffold_ef_salida.png) ![](capturas/11_vscode_persona_dbcontext.png) ![](capturas/12_vscode_persona_cs.png)
-15. Cadena de conexión `PersonaDb` en `appsettings.json`. ![](capturas/13_vscode_appsettings.png)
+Trabajé en macOS con chip Apple Silicon. La guía del profesor está pensada para Windows, así que cada herramienta se reemplazó por su equivalente en Mac: Docker Desktop en lugar de SQL Server Express instalado, VS Code con las extensiones C# Dev Kit y SQL Server (mssql) en lugar de Visual Studio y SSMS, y `dotnet` y `dotnet ef` en Terminal en lugar de las plantillas y la Consola del Administrador de paquetes.
 
-**Ajustes:** las entidades generadas coinciden con las de la referencia (mismos nombres de propiedades y tipos), así que no fue necesario cambiar DTOs, repositorios ni controladores. Solo difieren comentarios y el BOM del archivo.
+### 3.1 Ambiente
 
-## 5. Código MVC + DAO
+**Paso 1. Sistema.** macOS 27.0.1 y arquitectura `arm64`.
+![Versión de macOS y arquitectura](capturas/01_chip_mac.png)
 
-16. DTOs. ![](capturas/14_vscode_dtos.png)
-17. Interfaces de repositorio (`IPersonaRepository`). ![](capturas/15_vscode_ipersona_repository.png)
-18. Repositorios (`PersonaRepository`). ![](capturas/16_vscode_persona_repository.png)
-19. Controladores REST (`PersonasApiController`). ![](capturas/17_vscode_personas_api_controller.png)
-20. Controladores MVC (`PersonasController`). ![](capturas/18_vscode_personas_controller.png)
-21. `Program.cs` con el registro del DbContext, los repositorios y Swagger. ![](capturas/19_vscode_program_cs.png)
+**Paso 2. Homebrew y Git.** Homebrew 7.0.10 y Git 2.54.0.
+![Homebrew y Git](capturas/02_homebrew_git.png)
 
-## 6. Compilación y ejecución
+**Paso 3. Docker Desktop con Rosetta.** Se activó *Use Rosetta for x86_64/amd64 emulation on Apple Silicon* en Settings › General › Virtual Machine Options, necesario porque la imagen de SQL Server es `amd64`.
+![Docker Desktop con Rosetta activado](capturas/99_docker_rosetta_activado.png)
 
-22. `dotnet build`: 0 errores, 0 advertencias. ![](capturas/34_dotnet_build.png)
-23. `dotnet run`: la app escucha en `http://localhost:5080`. ![](capturas/35_dotnet_run_listening.png)
+**Paso 4. Docker.** Versión del cliente y del servidor.
+![docker version](capturas/03_docker_version.png)
 
-## 7. Pruebas en navegador
+**Paso 5. SDK de .NET 7.** Se instaló el paquete oficial `dotnet-sdk-7.0.410-osx-arm64.pkg`.
+![SDKs instalados](capturas/04_dotnet_sdks.png)
 
-24. Página de inicio y listados de cada entidad. ![](capturas/41_navegador_inicio.png) ![](capturas/42_navegador_personas.png) ![](capturas/43_navegador_profesiones.png) ![](capturas/44_navegador_estudios.png) ![](capturas/45_navegador_telefonos.png)
-25. Formularios de crear, editar y eliminar para **personas**. Errores de validación con el formulario vacío, formulario lleno, listado tras crear, editar, confirmar eliminar y listado tras eliminar. ![](capturas/47_persona_crear_errores.png) ![](capturas/48_persona_crear_formulario.png) ![](capturas/49_persona_listado_tras_crear.png) ![](capturas/50_persona_editar_formulario.png) ![](capturas/51_persona_listado_tras_editar.png) ![](capturas/52_persona_confirmar_eliminar.png) ![](capturas/53_persona_listado_tras_eliminar.png)
-26. Lo mismo para **profesiones**. ![](capturas/54_profesion_crear_errores.png) ![](capturas/55_profesion_crear_formulario.png) ![](capturas/56_profesion_listado_tras_crear.png) ![](capturas/57_profesion_editar_formulario.png) ![](capturas/58_profesion_listado_tras_editar.png) ![](capturas/59_profesion_confirmar_eliminar.png) ![](capturas/60_profesion_listado_tras_eliminar.png)
-27. Lo mismo para **teléfonos**. ![](capturas/61_telefono_crear_errores.png) ![](capturas/62_telefono_crear_formulario.png) ![](capturas/63_telefono_listado_tras_crear.png) ![](capturas/64_telefono_editar_formulario.png) ![](capturas/65_telefono_listado_tras_editar.png) ![](capturas/66_telefono_confirmar_eliminar.png) ![](capturas/67_telefono_listado_tras_eliminar.png)
-28. Lo mismo para **estudios**. ![](capturas/68_estudio_crear_errores.png) ![](capturas/69_estudio_crear_formulario.png) ![](capturas/70_estudio_listado_tras_crear.png) ![](capturas/71_estudio_editar_formulario.png) ![](capturas/72_estudio_listado_tras_editar.png) ![](capturas/73_estudio_confirmar_eliminar.png) ![](capturas/74_estudio_listado_tras_eliminar.png)
+**Paso 6. Herramienta EF Core.** `dotnet tool install --global dotnet-ef --version 7.0.20`.
+![dotnet ef](capturas/05_dotnet_ef.png)
 
-## 8. Swagger
+**Paso 7. sqlcmd.** Instalado con Homebrew para consultar SQL Server desde Terminal.
+![sqlcmd](capturas/06_sqlcmd_version.png)
 
-29. Interfaz general. ![](capturas/46_swagger_ui.png)
-30. Por entidad se probaron GET de lista, POST (201), GET por id (200), PUT (204), DELETE (204) y GET tras eliminar (404).
-    - Personas: ![](capturas/75_swagger_personas_get.png) ![](capturas/76_swagger_personas_post.png) ![](capturas/77_swagger_personas_get_id.png) ![](capturas/78_swagger_personas_put.png) ![](capturas/79_swagger_personas_delete.png) ![](capturas/80_swagger_personas_get_id_404.png)
-    - Profesiones: ![](capturas/81_swagger_profesiones_get.png) ![](capturas/82_swagger_profesiones_post.png) ![](capturas/83_swagger_profesiones_get_id.png) ![](capturas/84_swagger_profesiones_put.png) ![](capturas/85_swagger_profesiones_delete.png) ![](capturas/86_swagger_profesiones_get_id_404.png)
-    - Teléfonos: ![](capturas/87_swagger_telefonos_get.png) ![](capturas/88_swagger_telefonos_post.png) ![](capturas/89_swagger_telefonos_get_num.png) ![](capturas/90_swagger_telefonos_put.png) ![](capturas/91_swagger_telefonos_delete.png) ![](capturas/92_swagger_telefonos_get_num_404.png)
-    - Estudios: ![](capturas/93_swagger_estudios_get.png) ![](capturas/94_swagger_estudios_post.png) ![](capturas/95_swagger_estudios_get_id.png) ![](capturas/96_swagger_estudios_put.png) ![](capturas/97_swagger_estudios_delete.png) ![](capturas/98_swagger_estudios_get_id_404.png)
+**Paso 8. VS Code.** Extensiones C# Dev Kit y SQL Server (mssql) instaladas.
+![Explorador de VS Code con el proyecto](capturas/10_vscode_explorer_proyecto.png)
 
-## 9. Pruebas con curl
+### 3.2 Base de datos
 
-31. GET de las cuatro entidades, POST y DELETE. ![](capturas/37_curl_api_pruebas.png)
+**Paso 9. Docker Compose.** `docker-compose.yml` define la imagen `mssql/server:2022-latest` con `MSSQL_PID=Express`.
+![docker-compose.yml](capturas/09_docker_compose_yml.png)
 
-## 10. Publicación
+**Paso 10. Levantar el contenedor.** `docker compose up -d` y `docker ps`. Los logs confirman "SQL Server is now ready for client connections".
+![Contenedor y mensaje de listo](capturas/08_docker_ps_ready.png)
 
-32. `dotnet publish -c Release -o ./publish`. La carpeta `publish/` está en `.gitignore`. ![](capturas/39_dotnet_publish.png)
-33. Ejecución de la app publicada en el puerto 5080. ![](capturas/39b_publish_ejecucion.png)
+**Paso 11. Versión del motor.** `SELECT @@VERSION` confirma **SQL Server 2022 Express Edition**.
+![Versión de SQL Server](capturas/07_sql_server_version.png)
 
-## 11. Cierre
+**Paso 12. Scripts.** Se ejecutaron `01_ddl.sql` (crea `persona_db` y las cuatro tablas) y `02_dml.sql` (datos de prueba). Al final de las pruebas se volvió a ejecutar `02_dml.sql` para restaurar los datos iniciales.
+![Restauración de datos](capturas/38_dml_restaurado.png)
 
-34. Commits locales: `96a7130` (monolito MVC + DAO), `abf9134`, `660c847` y `6b0e5f4` (capturas).
+### 3.3 Creación del proyecto
 
-## Pendiente
+**Paso 13. Repositorio y solución.** `git init`, `dotnet new sln` y `dotnet new mvc --framework net7.0 --no-https --auth None`, agregado a la solución.
+![Historial inicial de git](capturas/40_git_log_status.png)
 
-- **Publicación en GitHub** (repo público, push a `main`, tag `v1.0.0`): pendiente de autorización.
+**Paso 14. Paquetes NuGet.** `Microsoft.EntityFrameworkCore`, `.SqlServer`, `.Tools` y `.Design` 7.0.20, y `Swashbuckle.AspNetCore` 6.5.0.
+![Paquetes instalados](capturas/21_dotnet_list_package.png)
+![Archivo de proyecto](capturas/20_vscode_csproj.png)
+
+### 3.4 Entidades (Database First)
+
+**Paso 15. Scaffold.** `dotnet ef dbcontext scaffold` con `--output-dir Models/Entities` y `--context PersonaDbContext`.
+![Salida del scaffold](capturas/23_scaffold_ef_salida.png)
+![PersonaDbContext generado](capturas/11_vscode_persona_dbcontext.png)
+![Clase Persona generada](capturas/12_vscode_persona_cs.png)
+
+**Paso 16. Cadena de conexión.** Se agregó `PersonaDb` en `appsettings.json`.
+![appsettings.json](capturas/13_vscode_appsettings.png)
+
+### 3.5 Código MVC y DAO
+
+**Paso 17. DTOs.**
+![Dtos.cs](capturas/14_vscode_dtos.png)
+
+**Paso 18. Interfaces.**
+![IPersonaRepository](capturas/15_vscode_ipersona_repository.png)
+
+**Paso 19. Repositorios.**
+![PersonaRepository](capturas/16_vscode_persona_repository.png)
+
+**Paso 20. Controladores REST.**
+![PersonasApiController](capturas/17_vscode_personas_api_controller.png)
+
+**Paso 21. Controladores MVC.**
+![PersonasController](capturas/18_vscode_personas_controller.png)
+
+**Paso 22. Program.cs.** Registro del contexto, de los repositorios y de Swagger.
+![Program.cs](capturas/19_vscode_program_cs.png)
+
+### 3.6 Compilación y ejecución
+
+**Paso 23. Compilación.** `dotnet build` sin errores ni advertencias.
+![Build sin errores](capturas/34_dotnet_build.png)
+
+**Paso 24. Ejecución.** `dotnet run` escucha en `http://localhost:5080`.
+![dotnet run](capturas/35_dotnet_run_listening.png)
+
+### 3.7 Pruebas con curl
+
+**Paso 25.** GET de las cuatro entidades (200), POST de una persona (201) y DELETE (204).
+![Pruebas con curl](capturas/37_curl_api_pruebas.png)
+
+### 3.8 Pruebas en el navegador (vistas MVC)
+
+**Paso 26. Inicio y listados.**
+![Inicio](capturas/41_navegador_inicio.png)
+![Listado de personas](capturas/42_navegador_personas.png)
+![Listado de profesiones](capturas/43_navegador_profesiones.png)
+![Listado de estudios](capturas/44_navegador_estudios.png)
+![Listado de teléfonos](capturas/45_navegador_telefonos.png)
+
+**Paso 27. CRUD de personas.** Errores de validación, crear, listado tras crear, editar, confirmar eliminar y listado tras eliminar.
+![Errores al crear persona](capturas/47_persona_crear_errores.png)
+![Formulario de persona lleno](capturas/48_persona_crear_formulario.png)
+![Listado tras crear](capturas/49_persona_listado_tras_crear.png)
+![Formulario de editar](capturas/50_persona_editar_formulario.png)
+![Listado tras editar](capturas/51_persona_listado_tras_editar.png)
+![Confirmación de eliminar](capturas/52_persona_confirmar_eliminar.png)
+![Listado tras eliminar](capturas/53_persona_listado_tras_eliminar.png)
+
+**Paso 28. CRUD de profesiones.**
+![Errores al crear](capturas/54_profesion_crear_errores.png)
+![Formulario lleno](capturas/55_profesion_crear_formulario.png)
+![Listado tras crear](capturas/56_profesion_listado_tras_crear.png)
+![Formulario de editar](capturas/57_profesion_editar_formulario.png)
+![Listado tras editar](capturas/58_profesion_listado_tras_editar.png)
+![Confirmación de eliminar](capturas/59_profesion_confirmar_eliminar.png)
+![Listado tras eliminar](capturas/60_profesion_listado_tras_eliminar.png)
+
+**Paso 29. CRUD de teléfonos.**
+![Errores al crear](capturas/61_telefono_crear_errores.png)
+![Formulario lleno](capturas/62_telefono_crear_formulario.png)
+![Listado tras crear](capturas/63_telefono_listado_tras_crear.png)
+![Formulario de editar](capturas/64_telefono_editar_formulario.png)
+![Listado tras editar](capturas/65_telefono_listado_tras_editar.png)
+![Confirmación de eliminar](capturas/66_telefono_confirmar_eliminar.png)
+![Listado tras eliminar](capturas/67_telefono_listado_tras_eliminar.png)
+
+**Paso 30. CRUD de estudios.**
+![Errores al crear](capturas/68_estudio_crear_errores.png)
+![Formulario lleno](capturas/69_estudio_crear_formulario.png)
+![Listado tras crear](capturas/70_estudio_listado_tras_crear.png)
+![Formulario de editar](capturas/71_estudio_editar_formulario.png)
+![Listado tras editar](capturas/72_estudio_listado_tras_editar.png)
+![Confirmación de eliminar](capturas/73_estudio_confirmar_eliminar.png)
+![Listado tras eliminar](capturas/74_estudio_listado_tras_eliminar.png)
+
+### 3.9 Pruebas en Swagger
+
+**Paso 31. Interfaz general.**
+![Swagger UI](capturas/46_swagger_ui.png)
+
+**Paso 32. Pruebas por entidad.** Para cada una: GET de lista (200), POST (201), GET por id (200), PUT (204), DELETE (204) y GET tras eliminar (404).
+
+- Personas: ![GET](capturas/75_swagger_personas_get.png) ![POST](capturas/76_swagger_personas_post.png) ![GET id](capturas/77_swagger_personas_get_id.png) ![PUT](capturas/78_swagger_personas_put.png) ![DELETE](capturas/79_swagger_personas_delete.png) ![404](capturas/80_swagger_personas_get_id_404.png)
+- Profesiones: ![GET](capturas/81_swagger_profesiones_get.png) ![POST](capturas/82_swagger_profesiones_post.png) ![GET id](capturas/83_swagger_profesiones_get_id.png) ![PUT](capturas/84_swagger_profesiones_put.png) ![DELETE](capturas/85_swagger_profesiones_delete.png) ![404](capturas/86_swagger_profesiones_get_id_404.png)
+- Teléfonos: ![GET](capturas/87_swagger_telefonos_get.png) ![POST](capturas/88_swagger_telefonos_post.png) ![GET num](capturas/89_swagger_telefonos_get_num.png) ![PUT](capturas/90_swagger_telefonos_put.png) ![DELETE](capturas/91_swagger_telefonos_delete.png) ![404](capturas/92_swagger_telefonos_get_num_404.png)
+- Estudios: ![GET](capturas/93_swagger_estudios_get.png) ![POST](capturas/94_swagger_estudios_post.png) ![GET id](capturas/95_swagger_estudios_get_id.png) ![PUT](capturas/96_swagger_estudios_put.png) ![DELETE](capturas/97_swagger_estudios_delete.png) ![404](capturas/98_swagger_estudios_get_id_404.png)
+
+### 3.10 Publicación
+
+**Paso 33. Publicación Release.** `dotnet publish -c Release -o ./publish`. La carpeta `publish/` está en `.gitignore`.
+![dotnet publish](capturas/39_dotnet_publish.png)
+
+**Paso 34. Ejecución del publicado.** La aplicación publicada responde en el puerto 5080.
+![Publicado en ejecución](capturas/39b_publish_ejecucion.png)
+
+### 3.11 Control de versiones y entrega
+
+**Paso 35. Commits y tag.** Un commit por etapa (monolito, capturas, documento) y el tag anotado `v1.0.0` con el mensaje "Entrega Laboratorio 1". El repositorio es público en GitHub.
+
+---
+
+## 4. Conclusiones y lecciones aprendidas
+
+1. **La separación en capas facilitó probar cada parte por separado.** Con las interfaces DAO comprobé el mismo CRUD desde las vistas MVC, la API REST y Swagger, sin tocar los repositorios.
+2. **Database First es práctico cuando la base ya existe.** El scaffold generó entidades y contexto en un paso, pero la base queda como fuente de verdad: cualquier cambio en las tablas exige volver a generar las clases.
+3. **Montar SQL Server en un Mac tiene particularidades.** La imagen oficial es `amd64`, así que en Apple Silicon hay que activar Rosetta en Docker Desktop. También hay que esperar a que el motor esté listo antes de conectarse, lo que se confirma en los logs del contenedor.
+4. **Las claves foráneas sin `ON DELETE CASCADE` obligan a decidir dónde vive la regla de negocio.** Dejar que el repositorio elimine primero los dependientes evitó errores de integridad, pero esa regla hay que recordarla si cambia el motor de base de datos.
+
+**Errores que hubo que corregir durante el laboratorio:**
+
+- **Permisos de macOS.** La captura de pantalla y el acceso de VS Code a la carpeta del proyecto estaban bloqueados (Grabación de pantalla y Acceso total al disco). Hubo que concederlos y reiniciar las aplicaciones.
+- **Instalación del SDK.** El instalador de .NET 7 no quedó completo en el primer intento y hubo que reabrirlo.
+- **Docker sin Rosetta.** Sin Rosetta, la imagen de SQL Server no corre en Apple Silicon; se activó en Virtual Machine Options.
+- **Datos de prueba borrados.** Al probar DELETE de un estudio de la semilla se perdió un dato; se restauró volviendo a ejecutar `02_dml.sql`.
+- **Automatización de navegadores.** Safari no permite ejecutar JavaScript desde AppleScript sin activar una opción de desarrollador, así que los formularios se probaron en Chrome. Chrome muestra la barra "Claude comenzó a depurar este navegador" en algunas capturas.
+
+---
+
+## 5. Referencias
+
+Microsoft. (2023). *ASP.NET Core MVC documentation*. https://learn.microsoft.com/aspnet/core/mvc/
+
+Microsoft. (2023). *Entity Framework Core documentation*. https://learn.microsoft.com/ef/core/
+
+Microsoft. (2023). *Scaffolding (reverse engineering) with EF Core*. https://learn.microsoft.com/ef/core/managing-schemas/scaffolding/
+
+Microsoft. (2023). *Quickstart: Run SQL Server container images with Docker*. https://learn.microsoft.com/sql/linux/quickstart-install-connect-docker
+
+Microsoft. (2023). *.NET 7 download*. https://dotnet.microsoft.com/download/dotnet/7.0
+
+Swashbuckle.AspNetCore. *Swashbuckle.AspNetCore 6.5.0* [Paquete NuGet]. https://www.nuget.org/packages/Swashbuckle.AspNetCore/6.5.0
+
+OpenAPI Initiative. (2021). *OpenAPI Specification 3.0.3*. https://spec.openapis.org/oas/v3.0.3
+
+Fielding, R. T. (2000). *Architectural styles and the design of network-based software architectures* [Tesis doctoral, University of California, Irvine]. https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+
+Docker Inc. *Docker Desktop documentation*. https://docs.docker.com/desktop/
+
+Martin, R. C. (2017). *Clean Architecture: A Craftsman's Guide to Software Structure and Design*. Prentice Hall.
+
+Fowler, M. (2002). *Patterns of Enterprise Application Architecture*. Addison-Wesley.
+
+[Diapositivas del curso de Arquitectura de Software: completar con la sesión y la fecha.]
+
+[Guía del laboratorio y enlaces que usó el grupo (hdeleon.net, dev.to, c-sharpcorner): completar con las URL exactas.]
