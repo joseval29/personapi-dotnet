@@ -71,3 +71,21 @@
 | 78 | 78_swagger_personas_put.png | 36 | Swagger: PUT /api/personas/{cc} (204) |
 | 79 | 79_swagger_personas_delete.png | 36 | Swagger: DELETE /api/personas/{cc} (204) |
 | 80 | 80_swagger_personas_get_id_404.png | 36 | Swagger: GET /api/personas/{cc} tras eliminar (404) |
+| 81 | 81_swagger_profesiones_get.png | 36 | Swagger: GET /api/profesiones (200) |
+| 82 | 82_swagger_profesiones_post.png | 36 | Swagger: POST /api/profesiones (201) |
+| 83 | 83_swagger_profesiones_get_id.png | 36 | Swagger: GET /api/profesiones/{id} (200) |
+| 84 | 84_swagger_profesiones_put.png | 36 | Swagger: PUT /api/profesiones/{id} (204) |
+| 85 | 85_swagger_profesiones_delete.png | 36 | Swagger: DELETE /api/profesiones/{id} (204) |
+| 86 | 86_swagger_profesiones_get_id_404.png | 36 | Swagger: GET /api/profesiones/{id} tras eliminar (404) |
+| 87 | 87_swagger_telefonos_get.png | 36 | Swagger: GET /api/telefonos (200) |
+| 88 | 88_swagger_telefonos_post.png | 36 | Swagger: POST /api/telefonos (201) |
+| 89 | 89_swagger_telefonos_get_num.png | 36 | Swagger: GET /api/telefonos/{num} (200) |
+| 90 | 90_swagger_telefonos_put.png | 36 | Swagger: PUT /api/telefonos/{num} (204) |
+| 91 | 91_swagger_telefonos_delete.png | 36 | Swagger: DELETE /api/telefonos/{num} (204) |
+| 92 | 92_swagger_telefonos_get_num_404.png | 36 | Swagger: GET /api/telefonos/{num} tras eliminar (404) |
+| 93 | 93_swagger_estudios_get.png | 36 | Swagger: GET /api/estudios (200) |
+| 94 | 94_swagger_estudios_post.png | 36 | Swagger: POST /api/estudios (201) |
+| 95 | 95_swagger_estudios_get_id.png | 36 | Swagger: GET /api/estudios/{idProf}/{ccPer} (200) |
+| 96 | 96_swagger_estudios_put.png | 36 | Swagger: PUT /api/estudios/{idProf}/{ccPer} (204) |
+| 97 | 97_swagger_estudios_delete.png | 36 | Swagger: DELETE /api/estudios/{idProf}/{ccPer} (204) |
+| 98 | 98_swagger_estudios_get_id_404.png | 36 | Swagger: GET /api/estudios/{idProf}/{ccPer} tras eliminar (404) |
