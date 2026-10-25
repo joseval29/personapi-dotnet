@@ -1,11 +1,11 @@
 # Laboratorio 1 – Implementación de monolito con patrón MVC y DAO
 
-**Universidad:** Pontificia Universidad Javeriana
-**Facultad:** Ingeniería de Sistemas
-**Materia:** Arquitectura de Software
-**Profesor:** Andrés Sánchez
-**Integrantes:** José Eduardo Valeriano Castiblanco, Jorge Andrés Fortich Ordosgoitia y Camila Beltrán Carreño
-**Fecha:** 29 de octubre de 2026
+**Universidad:** Pontificia Universidad Javeriana\
+**Facultad:** Ingeniería de Sistemas\
+**Materia:** Arquitectura de Software\
+**Profesor:** Andrés Sánchez\
+**Integrantes:** José Eduardo Valeriano Castiblanco, Jorge Andrés Fortich Ordosgoitia y Camila Beltrán Carreño\
+**Fecha:** 29 de octubre de 2026\
 **Ciudad:** Bogotá D.C.
 
 **Repositorio y entrega (tag v1.0.0):** https://github.com/joseval29/personapi-dotnet/tree/v1.0.0
