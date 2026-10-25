@@ -152,4 +152,4 @@ git push origin v1.0.0
 
 ## Autores
 
-Jose Eduardo Valeriano Castilblanaco (Joseval29), Jorge Andres Fortich Ordosgoitia (FortichOrdosgoitiaJorge)
+Jose Eduardo Valeriano Castiblanco (Joseval29), Jorge Andres Fortich Ordosgoitia (FortichOrdosgoitiaJorge)
