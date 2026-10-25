@@ -1,0 +1,14 @@
+@model ProfesionDto
+@{
+    ViewData["Title"] = "Eliminar profesión";
+}
+<h1 class="h3">Eliminar profesión</h1>
+<div class="alert alert-warning">¿Seguro que desea eliminar esta profesión? También se eliminarán los estudios asociados.</div>
+<dl class="row">
+    <dt class="col-sm-3">Id</dt><dd class="col-sm-9">@Model.Id</dd>
+    <dt class="col-sm-3">Nombre</dt><dd class="col-sm-9">@Model.Nom</dd>
+</dl>
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

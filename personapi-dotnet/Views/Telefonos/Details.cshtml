@@ -1,0 +1,12 @@
+@model TelefonoDto
+@{
+    ViewData["Title"] = "Detalle teléfono";
+}
+<h1 class="h3">Detalle de teléfono</h1>
+<dl class="row">
+    <dt class="col-sm-3">Número</dt><dd class="col-sm-9">@Model.Num</dd>
+    <dt class="col-sm-3">Operador</dt><dd class="col-sm-9">@Model.Oper</dd>
+    <dt class="col-sm-3">Dueño</dt><dd class="col-sm-9">@Model.Duenio - @Model.NombreDuenio</dd>
+</dl>
+<a asp-action="Edit" asp-route-id="@Model.Num" class="btn btn-primary">Editar</a>
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

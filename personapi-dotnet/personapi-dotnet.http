@@ -1,0 +1,70 @@
+@host = http://localhost:5080
+
+### Listar personas
+GET {{host}}/api/personas
+
+### Obtener persona
+GET {{host}}/api/personas/1010101010
+
+### Crear persona
+POST {{host}}/api/personas
+Content-Type: application/json
+
+{
+  "cc": 1060606060,
+  "nombre": "Sofía",
+  "apellido": "Ramírez",
+  "genero": "F",
+  "edad": 23
+}
+
+### Actualizar persona
+PUT {{host}}/api/personas/1060606060
+Content-Type: application/json
+
+{
+  "cc": 1060606060,
+  "nombre": "Sofía",
+  "apellido": "Ramírez Torres",
+  "genero": "F",
+  "edad": 24
+}
+
+### Crear profesión
+POST {{host}}/api/profesiones
+Content-Type: application/json
+
+{ "id": 6, "nom": "Arquitectura", "des": "Diseño de espacios y edificaciones" }
+
+### Crear estudio
+POST {{host}}/api/estudios
+Content-Type: application/json
+
+{ "idProf": 6, "ccPer": 1060606060, "fecha": "2026-06-30", "univer": "Pontificia Universidad Javeriana" }
+
+### Actualizar estudio
+PUT {{host}}/api/estudios/6/1060606060
+Content-Type: application/json
+
+{ "idProf": 6, "ccPer": 1060606060, "fecha": "2026-12-15", "univer": "Universidad Nacional de Colombia" }
+
+### Crear teléfono
+POST {{host}}/api/telefonos
+Content-Type: application/json
+
+{ "num": "3011112233", "oper": "WOM", "duenio": 1060606060 }
+
+### Listar teléfonos
+GET {{host}}/api/telefonos
+
+### Eliminar teléfono
+DELETE {{host}}/api/telefonos/3011112233
+
+### Eliminar estudio
+DELETE {{host}}/api/estudios/6/1060606060
+
+### Eliminar profesión
+DELETE {{host}}/api/profesiones/6
+
+### Eliminar persona
+DELETE {{host}}/api/personas/1060606060

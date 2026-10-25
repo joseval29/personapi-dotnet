@@ -1,0 +1,16 @@
+@model TelefonoDto
+@{
+    ViewData["Title"] = "Editar teléfono";
+    ViewData["EsEdicion"] = true;
+}
+<h1 class="h3">Editar teléfono</h1>
+<div class="row"><div class="col-md-6">
+    <form asp-action="Edit" asp-route-id="@Model.Num" method="post">
+        <partial name="_Form" model="Model" view-data="ViewData" />
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </form>
+</div></div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

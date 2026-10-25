@@ -1,0 +1,37 @@
+@model EstudioDto
+@{
+    ViewData["Title"] = "Editar estudio";
+}
+<h1 class="h3">Editar estudio</h1>
+<div class="row"><div class="col-md-6">
+    <form asp-action="Edit" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+        <input type="hidden" asp-for="IdProf" />
+        <input type="hidden" asp-for="CcPer" />
+        <input type="hidden" asp-for="NombrePersona" />
+        <input type="hidden" asp-for="NombreProfesion" />
+        <div class="mb-3">
+            <label class="form-label">Persona</label>
+            <input class="form-control" value="@Model.CcPer - @Model.NombrePersona" readonly />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Profesión</label>
+            <input class="form-control" value="@Model.IdProf - @Model.NombreProfesion" readonly />
+        </div>
+        <div class="mb-3">
+            <label asp-for="Fecha" class="form-label"></label>
+            <input asp-for="Fecha" class="form-control" />
+            <span asp-validation-for="Fecha"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Univer" class="form-label"></label>
+            <input asp-for="Univer" class="form-control" />
+            <span asp-validation-for="Univer"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a asp-action="Index" class="btn btn-secondary">Volver</a>
+    </form>
+</div></div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,41 @@
+@model PersonaDto
+@{
+    var esEdicion = (bool?)ViewData["EsEdicion"] ?? false;
+}
+<div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+<div class="mb-3">
+    <label asp-for="Cc" class="form-label"></label>
+    @if (esEdicion)
+    {
+        <input asp-for="Cc" class="form-control" readonly />
+    }
+    else
+    {
+        <input asp-for="Cc" class="form-control" />
+    }
+    <span asp-validation-for="Cc"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Nombre" class="form-label"></label>
+    <input asp-for="Nombre" class="form-control" />
+    <span asp-validation-for="Nombre"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Apellido" class="form-label"></label>
+    <input asp-for="Apellido" class="form-control" />
+    <span asp-validation-for="Apellido"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Genero" class="form-label"></label>
+    <select asp-for="Genero" class="form-select">
+        <option value="">-- Seleccione --</option>
+        <option value="M">Masculino (M)</option>
+        <option value="F">Femenino (F)</option>
+    </select>
+    <span asp-validation-for="Genero"></span>
+</div>
+<div class="mb-3">
+    <label asp-for="Edad" class="form-label"></label>
+    <input asp-for="Edad" class="form-control" />
+    <span asp-validation-for="Edad"></span>
+</div>

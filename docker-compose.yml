@@ -1,0 +1,20 @@
+# SQL Server 2022 Express en Docker (macOS / Linux / Windows)
+# En Mac con Apple Silicon (M1/M2/M3/M4) activar en Docker Desktop:
+# Settings > General > "Use Rosetta for x86_64/amd64 emulation on Apple Silicon"
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: personapi-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "PersonaApi2026!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  sqldata:

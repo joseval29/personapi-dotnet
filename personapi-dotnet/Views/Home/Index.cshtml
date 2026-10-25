@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Inicio";
+}
+<div class="p-4 mb-4 bg-light rounded-3 border">
+    <h1 class="display-6">personapi-dotnet</h1>
+    <p class="lead mb-0">Monolito ASP.NET Core MVC con patrón DAO (repositorios) para el CRUD de personas, profesiones, estudios y teléfonos.</p>
+</div>
+<div class="row g-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Personas</h5>
+            <p class="card-text small">Cédula, nombre, apellido, género y edad.</p>
+            <a asp-controller="Personas" asp-action="Index" class="btn btn-primary btn-sm">Administrar</a>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Profesiones</h5>
+            <p class="card-text small">Catálogo de profesiones.</p>
+            <a asp-controller="Profesiones" asp-action="Index" class="btn btn-primary btn-sm">Administrar</a>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Estudios</h5>
+            <p class="card-text small">Profesiones estudiadas por cada persona.</p>
+            <a asp-controller="Estudios" asp-action="Index" class="btn btn-primary btn-sm">Administrar</a>
+        </div></div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Teléfonos</h5>
+            <p class="card-text small">Teléfonos y su dueño.</p>
+            <a asp-controller="Telefonos" asp-action="Index" class="btn btn-primary btn-sm">Administrar</a>
+        </div></div>
+    </div>
+</div>
+<p class="mt-4">La documentación de la API REST está en <a href="/swagger" target="_blank">/swagger</a>.</p>
