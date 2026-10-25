@@ -37,3 +37,37 @@
 | 44 | 44_navegador_estudios.png | 36 | Listado de estudios en Safari |
 | 45 | 45_navegador_telefonos.png | 36 | Listado de teléfonos en Safari |
 | 46 | 46_swagger_ui.png | 36 | Swagger UI en /swagger |
+| 47 | 47_persona_crear_errores.png | 36 | Formulario de nueva persona con errores de validación (enviado vacío) |
+| 48 | 48_persona_crear_formulario.png | 36 | Formulario de nueva persona lleno |
+| 49 | 49_persona_listado_tras_crear.png | 36 | Listado de personas con el registro nuevo |
+| 50 | 50_persona_editar_formulario.png | 36 | Formulario de editar persona |
+| 51 | 51_persona_listado_tras_editar.png | 36 | Listado de personas tras editar |
+| 52 | 52_persona_confirmar_eliminar.png | 36 | Confirmación de eliminar persona |
+| 53 | 53_persona_listado_tras_eliminar.png | 36 | Listado de personas tras eliminar |
+| 54 | 54_profesion_crear_errores.png | 36 | Formulario de nueva profesión con errores de validación |
+| 55 | 55_profesion_crear_formulario.png | 36 | Formulario de nueva profesión lleno |
+| 56 | 56_profesion_listado_tras_crear.png | 36 | Listado de profesiones tras crear |
+| 57 | 57_profesion_editar_formulario.png | 36 | Formulario de editar profesión |
+| 58 | 58_profesion_listado_tras_editar.png | 36 | Listado de profesiones tras editar |
+| 59 | 59_profesion_confirmar_eliminar.png | 36 | Confirmación de eliminar profesión |
+| 60 | 60_profesion_listado_tras_eliminar.png | 36 | Listado de profesiones tras eliminar |
+| 61 | 61_telefono_crear_errores.png | 36 | Formulario de nuevo teléfono con errores de validación |
+| 62 | 62_telefono_crear_formulario.png | 36 | Formulario de nuevo teléfono lleno |
+| 63 | 63_telefono_listado_tras_crear.png | 36 | Listado de teléfonos tras crear |
+| 64 | 64_telefono_editar_formulario.png | 36 | Formulario de editar teléfono |
+| 65 | 65_telefono_listado_tras_editar.png | 36 | Listado de teléfonos tras editar |
+| 66 | 66_telefono_confirmar_eliminar.png | 36 | Confirmación de eliminar teléfono |
+| 67 | 67_telefono_listado_tras_eliminar.png | 36 | Listado de teléfonos tras eliminar |
+| 68 | 68_estudio_crear_errores.png | 36 | Formulario de nuevo estudio con errores de validación |
+| 69 | 69_estudio_crear_formulario.png | 36 | Formulario de nuevo estudio lleno |
+| 70 | 70_estudio_listado_tras_crear.png | 36 | Listado de estudios tras crear |
+| 71 | 71_estudio_editar_formulario.png | 36 | Formulario de editar estudio |
+| 72 | 72_estudio_listado_tras_editar.png | 36 | Listado de estudios tras editar |
+| 73 | 73_estudio_confirmar_eliminar.png | 36 | Confirmación de eliminar estudio |
+| 74 | 74_estudio_listado_tras_eliminar.png | 36 | Listado de estudios tras eliminar |
+| 75 | 75_swagger_personas_get.png | 36 | Swagger: GET /api/personas con 200 |
+| 76 | 76_swagger_personas_post.png | 36 | Swagger: POST /api/personas (201) |
+| 77 | 77_swagger_personas_get_id.png | 36 | Swagger: GET /api/personas/{cc} (200) |
+| 78 | 78_swagger_personas_put.png | 36 | Swagger: PUT /api/personas/{cc} (204) |
+| 79 | 79_swagger_personas_delete.png | 36 | Swagger: DELETE /api/personas/{cc} (204) |
+| 80 | 80_swagger_personas_get_id_404.png | 36 | Swagger: GET /api/personas/{cc} tras eliminar (404) |
