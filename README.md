@@ -149,3 +149,7 @@ git push origin main
 git tag -a v1.0.0 -m "Entrega Laboratorio 1"
 git push origin v1.0.0
 ```
+
+## Autores
+
+Jose Eduardo Valeriano Castilblanaco (Joseval29), Jorge Andres Fortich Ordosgoitia (FortichOrdosgoitiaJorge)
