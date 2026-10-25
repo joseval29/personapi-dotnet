@@ -30,3 +30,10 @@
 | 38 | 38_dml_restaurado.png | 38 | Restauración de datos con 02_dml.sql |
 | 39 | 39_dotnet_publish.png | 39 | `dotnet publish -c Release -o ./publish` |
 | 39b | 39b_publish_ejecucion.png | 39 | App publicada respondiendo en el puerto 5080 |
+| 40 | 40_git_log_status.png | 40 | `git log --oneline` y `git status` |
+| 41 | 41_navegador_inicio.png | 36 | Página de inicio en Safari (http://localhost:5080) |
+| 42 | 42_navegador_personas.png | 36 | Listado de personas en Safari |
+| 43 | 43_navegador_profesiones.png | 36 | Listado de profesiones en Safari |
+| 44 | 44_navegador_estudios.png | 36 | Listado de estudios en Safari |
+| 45 | 45_navegador_telefonos.png | 36 | Listado de teléfonos en Safari |
+| 46 | 46_swagger_ui.png | 36 | Swagger UI en /swagger |
