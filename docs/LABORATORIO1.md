@@ -86,7 +86,7 @@ Procedimiento seguido desde cero en un Mac con chip Apple Silicon. Cada paso lle
 
 ## 11. Cierre
 
-34. Commits locales: `ce1e834` (monolito MVC + DAO), `8d71014`, `dd5b11c` y `9d5ad32` (capturas).
+34. Commits locales: `96a7130` (monolito MVC + DAO), `abf9134`, `660c847` y `6b0e5f4` (capturas).
 
 ## Pendiente
 
