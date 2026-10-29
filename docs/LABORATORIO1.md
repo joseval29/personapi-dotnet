@@ -56,6 +56,8 @@ Las restricciones están en `scripts/01_ddl.sql`.
 
 Los controladores nunca usan `PersonaDbContext` directamente: dependen de las interfaces, y solo los repositorios hablan con EF Core.
 
+Este diagrama es para ver las cinco capas de arriba hacia abajo, con la regla de dependencia: cada capa solo llama a la de abajo. Se muestra la presentación (controladores MVC y API REST, Vistas Razor y Swagger UI), la abstracción DAO con sus interfaces, la implementación con repositorios, la persistencia con EF Core y la capa de datos en SQL Server dentro de Docker. Los recuadros transversales (DTOs y mappers, inyección de dependencias y configuración) los usan varias capas a la vez.
+
 ![Arquitectura por capas en PlantUML](diagramas/08_arquitectura_capas.png)
 
 Fuente del diagrama: [`diagramas/08_arquitectura_capas.puml`](diagramas/08_arquitectura_capas.puml).
@@ -110,37 +112,39 @@ personapi-dotnet/                  (raíz del repositorio, git)
 
 ### 2.7 Diagramas C4
 
-Los diagramas siguen el modelo C4: contexto, contenedores, componentes, código y dinámicos.
+Los diagramas siguen el modelo C4 de Simon Brown, que describe un sistema en niveles de zoom: de lo más general (contexto) a lo más detallado (código). Los dos diagramas dinámicos muestran cómo colaboran las partes en un caso de uso concreto, y el de despliegue muestra dónde corre todo. Cada uno responde una pregunta distinta, así que conviene leerlos en orden.
 
-**Contexto (nivel 1)**
+**Paisaje del sistema.** Este diagrama es la vista de conjunto del laboratorio. Muestra el sistema `personapi-dotnet` junto con quién lo usa, sin entrar en detalles técnicos, para ubicar el problema antes de descomponerlo.
+
+![Paisaje de sistemas](diagramas/01_paisaje.svg)
+
+**Nivel 1, contexto.** Este diagrama es para entender el alcance: qué personas y sistemas externos interactúan con el monolito. Se muestra un usuario administrativo que gestiona personas, profesiones, estudios y teléfonos desde el navegador, y un desarrollador o cliente de la API que la consume con Swagger, `curl` o Postman. El sistema aparece como una sola caja, sin preguntar cómo está construido por dentro.
 
 ![Contexto](diagramas/02_contexto.svg)
 
-**Contenedores (nivel 2)**
+**Nivel 2, contenedores.** Este diagrama es para entender las partes desplegables. Dentro del sistema aparece la aplicación web monolítica (.NET 7, ASP.NET Core MVC, Kestrel en el puerto 5080), que es un único ejecutable con las vistas Razor, la API REST y la documentación Swagger. Aquí se ve que el monolito se despliega como una sola unidad, y que la base de datos SQL Server está fuera de él.
 
 ![Contenedores](diagramas/03_contenedores.svg)
 
-**Componentes (nivel 3)**
+**Nivel 3, componentes.** Este diagrama es para entender la organización interna del monolito. Se muestran los controladores MVC (`HomeController`, `PersonasController`, `ProfesionesController`, `EstudiosController` y `TelefonosController`), las vistas Razor, y la capa DAO con sus interfaces y repositorios. Es la vista que justifica la separación en capas: los controladores solo conocen interfaces, no EF Core.
 
 ![Componentes](diagramas/04_componentes.svg)
 
-**Código (nivel 4)**
+**Nivel 4, código.** Este diagrama es para mostrar cómo viaja la entidad `Persona` por el código. Aparecen las clases principales (`PersonasController`, `PersonasApiController`, `IPersonaRepository`, `PersonaDto` y las entidades) con sus métodos y los códigos de respuesta de la API (200, 201, 204, 400, 404 y 409). Sirve de referencia para revisar la implementación sin abrir todos los archivos.
 
 ![Código](diagramas/05_codigo.svg)
 
-**Dinámico: crear persona por la API**
+**Dinámico: crear persona por la API.** Este diagrama es para seguir una petición real. Muestra el recorrido de un `POST /api/personas`: el `PersonasApiController` recibe el `PersonaDto`, lo valida con DataAnnotations y lo convierte, llama a `IPersonaRepository`, y el repositorio usa `PersonaDbContext` de EF Core para guardar la fila. Esta es la vista para entender qué pasa entre el cliente y la base de datos.
 
 ![Crear persona por la API](diagramas/06a_dinamico_crear_persona_api.svg)
 
-**Dinámico: eliminar persona desde MVC (borrado en cascada)**
+**Dinámico: eliminar persona desde MVC (borrado en cascada).** Este diagrama es para explicar la regla de negocio del borrado. Muestra cómo el `PersonasController` de las vistas MVC elimina una persona, y cómo el repositorio borra antes sus estudios y teléfonos, porque las claves foráneas no tienen `ON DELETE CASCADE`. Es la parte del diseño que más conviene explicar en la sustentación.
 
 ![Eliminar persona desde MVC](diagramas/06b_dinamico_eliminar_persona_mvc.svg)
 
-**Despliegue**
+**Despliegue.** Este diagrama es para mostrar el ambiente real del laboratorio. Todo corre en un MacBook con Apple Silicon: el navegador, el runtime de .NET 7 con Kestrel y Docker Desktop con Rosetta, que ejecuta el contenedor `mcr.microsoft.com/mssql/server:2022-latest` con el volumen `sqldata`. Explica por qué la imagen de SQL Server corre con emulación.
 
 ![Despliegue](diagramas/07_despliegue.svg)
-
-Vista general del paisaje del sistema: ![Paisaje](diagramas/01_paisaje.svg)
 
 ---
 
