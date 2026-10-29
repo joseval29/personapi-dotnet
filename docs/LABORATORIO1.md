@@ -8,7 +8,7 @@
 **Fecha:** 29 de octubre de 2026\
 **Ciudad:** Bogotá D.C.
 
-**Repositorio y entrega (tag v1.0.0):** https://github.com/joseval29/personapi-dotnet/tree/v1.0.0
+**Repositorio:** https://github.com/joseval29/personapi-dotnet
 
 ---
 
@@ -150,7 +150,7 @@ Los diagramas siguen el modelo C4 de Simon Brown, que describe un sistema en niv
 
 ## 3. Procedimiento
 
-Trabajé en macOS con chip Apple Silicon. La guía del profesor está pensada para Windows, así que cada herramienta se reemplazó por su equivalente en Mac: Docker Desktop en lugar de SQL Server Express instalado, VS Code con las extensiones C# Dev Kit y SQL Server (mssql) en lugar de Visual Studio y SSMS, y `dotnet` y `dotnet ef` en Terminal en lugar de las plantillas y la Consola del Administrador de paquetes.
+Trabajamos en macOS con chip Apple Silicon. La guía del profesor está pensada para Windows, así que cada herramienta se reemplazó por su equivalente en Mac: Docker Desktop en lugar de SQL Server Express instalado, VS Code con las extensiones C# Dev Kit y SQL Server (mssql) en lugar de Visual Studio y SSMS, y `dotnet` y `dotnet ef` en Terminal en lugar de las plantillas y la Consola del Administrador de paquetes.
 
 ### 3.1 Ambiente
 
@@ -311,13 +311,13 @@ Trabajé en macOS con chip Apple Silicon. La guía del profesor está pensada pa
 
 ### 3.11 Control de versiones y entrega
 
-**Paso 35. Commits y tag.** Un commit por etapa (monolito, capturas, documento) y el tag anotado `v1.0.0` con el mensaje "Entrega Laboratorio 1". El repositorio es público en GitHub.
+**Paso 35. Commits y tag.** Un commit por etapa (monolito, capturas, documento). El repositorio es público en GitHub. La entrega se marca con el tag anotado `v1.0.0` y el mensaje "Entrega Laboratorio 1", que se crea al cerrar el laboratorio.
 
 ---
 
 ## 4. Conclusiones y lecciones aprendidas
 
-1. **La separación en capas facilitó probar cada parte por separado.** Con las interfaces DAO comprobé el mismo CRUD desde las vistas MVC, la API REST y Swagger, sin tocar los repositorios.
+1. **La separación en capas facilitó probar cada parte por separado.** Con las interfaces DAO comprobamos el mismo CRUD desde las vistas MVC, la API REST y Swagger, sin tocar los repositorios.
 2. **Database First es práctico cuando la base ya existe.** El scaffold generó entidades y contexto en un paso, pero la base queda como fuente de verdad: cualquier cambio en las tablas exige volver a generar las clases.
 3. **Montar SQL Server en un Mac tiene particularidades.** La imagen oficial es `amd64`, así que en Apple Silicon hay que activar Rosetta en Docker Desktop. También hay que esperar a que el motor esté listo antes de conectarse, lo que se confirma en los logs del contenedor.
 4. **Las claves foráneas sin `ON DELETE CASCADE` obligan a decidir dónde vive la regla de negocio.** Dejar que el repositorio elimine primero los dependientes evitó errores de integridad, pero esa regla hay que recordarla si cambia el motor de base de datos.
