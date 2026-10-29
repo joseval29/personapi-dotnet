@@ -1,0 +1,35 @@
+@startuml 06b_dinamico_eliminar_persona_mvc
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.10.0/C4_Dynamic.puml
+LAYOUT_TOP_DOWN()
+hide stereotype
+title Diagrama Dinámico: eliminar una persona desde las vistas MVC (borrado en cascada)
+
+Person(usuario, "Usuario administrativo", "Navegador web")
+ContainerDb(db, "Base de datos persona_db", "SQL Server 2022 Express · contenedor personapi-sqlserver")
+
+Boundary(webapp, "Aplicación Web Monolítica · contenedor personapi-web", "Contenedor") {
+  Component(mvc, "PersonasController", "Controlador MVC")
+  Component(vista, "Vistas Personas", "Razor (.cshtml)", "Delete.cshtml e Index.cshtml")
+  Component(repo, "PersonaRepository", "Repositorio DAO (vía IPersonaRepository)")
+  Component(ctx, "PersonaDbContext", "EF Core 7")
+}
+
+Rel(usuario, mvc, "GET /Personas/Delete/{cc}", "HTTP")
+Rel(mvc, repo, "GetByIdAsync(cc)")
+Rel(mvc, vista, "Muestra la página de confirmación")
+Rel(usuario, mvc, "POST /Personas/Delete/{cc} (con token antifalsificación)", "HTTP")
+Rel(mvc, repo, "DeleteAsync(cc)")
+Rel(repo, ctx, "Marca para borrar los estudios y teléfonos de la persona y luego la persona")
+Rel(ctx, db, "DELETE estudios, DELETE telefono, DELETE persona en una sola transacción (SaveChangesAsync)", "SQL / TDS · sqlserver:1433")
+Rel_Back(usuario, mvc, "Redirige a /Personas con el mensaje Persona eliminada correctamente", "HTTP 302")
+skinparam LegendFontColor #333333
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #BBBBBB
+legend right
+<b>Convenciones</b>
+|<#08427B> <color:#FFFFFF> Persona </color> |
+|<#85BBF0> <color:#000000> Componente </color> |
+|<#438DD5> <color:#FFFFFF> Contenedor: base de datos </color> |
+Los números indican el orden de los pasos
+endlegend
+@enduml

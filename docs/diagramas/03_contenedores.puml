@@ -1,0 +1,28 @@
+@startuml 03_contenedores
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.10.0/C4_Container.puml
+LAYOUT_TOP_DOWN()
+hide stereotype
+title Nivel 2 - Diagrama de Contenedores: personapi-dotnet
+
+Person(usuario, "Usuario administrativo", "Gestiona los registros desde el navegador.")
+Person(desarrollador, "Desarrollador / Cliente de la API", "Consume la API REST.")
+
+Boundary(sistema, "personapi-dotnet", "Sistema de software") {
+  Container(webapp, "Aplicación Web Monolítica", ".NET 7, ASP.NET Core MVC · contenedor Docker personapi-web (puerto 5080)", "Un único desplegable que contiene las vistas Razor (MVC), la API REST, la documentación Swagger y la capa de acceso a datos (DAO).")
+  ContainerDb(db, "Base de datos persona_db", "SQL Server 2022 Express · contenedor Docker personapi-sqlserver (puerto 1433)", "Tablas persona, profesion, estudios y telefono.")
+}
+
+Rel(usuario, webapp, "Usa las vistas CRUD", "HTTP, HTML")
+Rel(desarrollador, webapp, "Llama a /api/* y usa /swagger", "HTTP, JSON")
+Rel(webapp, db, "Lee y escribe datos", "EF Core / TDS · sqlserver:1433 (red de Docker Compose)")
+skinparam LegendFontColor #333333
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #BBBBBB
+legend right
+<b>Convenciones</b>
+|<#08427B> <color:#FFFFFF> Persona </color> |
+|<#438DD5> <color:#FFFFFF> Contenedor </color> |
+|<#438DD5> <color:#FFFFFF> Contenedor: base de datos </color> |
+Recuadro punteado: límite del sistema
+endlegend
+@enduml

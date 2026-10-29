@@ -1,39 +1,112 @@
 @startuml 08_arquitectura_capas
-title Arquitectura por capas - personapi-dotnet
+title Arquitectura por capas: personapi-dotnet (monolito MVC + DAO)
+
+top to bottom direction
+skinparam defaultFontName Arial
 skinparam shadowing false
-skinparam defaultFontName Helvetica
-skinparam componentStyle rectangle
+skinparam roundCorner 10
+skinparam nodesep 40
+skinparam ranksep 50
 skinparam ArrowColor #555555
-skinparam ComponentBackgroundColor #E6F1FB
-skinparam ComponentBorderColor #185FA5
-skinparam DatabaseBackgroundColor #EEEDFE
-skinparam DatabaseBorderColor #534AB7
-skinparam PackageBorderColor #888780
-skinparam PackageStyle rectangle
-
-component "Navegador / Swagger UI" as NAV
-
-package "personapi-dotnet (monolito)" {
-  component "Controladores MVC\nPersonasController..." as MVC
-  component "Controladores API\nPersonasApiController..." as API
-  component "Interfaces DAO\nIPersonaRepository..." as IDAO
-  component "Repositorios\nPersonaRepository..." as REPO
-  component "EF Core\nPersonaDbContext, entidades" as EF
+skinparam ArrowFontColor #555555
+skinparam ArrowFontSize 11
+skinparam packageStyle rectangle
+skinparam package {
+  BorderColor #999999
+  BackgroundColor #F5F5F5
+  FontColor #333333
+  FontStyle bold
+}
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #1168BD
+  FontColor #222222
+}
+skinparam node {
+  BorderColor #1168BD
+  BackgroundColor #FFFFFF
+}
+skinparam storage {
+  BorderColor #999999
+  BackgroundColor #FFFFFF
+}
+skinparam database {
+  BackgroundColor #E3EEFB
+  BorderColor #1168BD
+}
+skinparam actor {
+  BorderColor #08427B
+  BackgroundColor #08427B
+}
+skinparam legend {
+  BackgroundColor #FFFFFF
+  BorderColor #BBBBBB
 }
 
-database "SQL Server 2022 Express\n(Docker, persona_db)" as DB
+actor "Usuario (navegador)" as usuario
+actor "Cliente REST (Swagger UI / curl)" as cliente
 
-NAV --> MVC : vistas HTML
-NAV --> API : Swagger UI / JSON
-MVC --> IDAO : usa
-API --> IDAO : usa
-IDAO <|.. REPO : implementa
-REPO --> EF : consulta
-EF --> DB : TCP 1433
+package "1. Capa de presentación  ·  contenedor personapi-web, puerto 5080" as presentacion {
+  component "Vistas Razor\n<size:10>Index, Details, Create, Edit, Delete</size>" as vistas
+  component "Controladores MVC\n<size:10>Personas, Profesiones,</size>\n<size:10>Estudios, Telefonos</size>" as mvc
+  component "Controladores API REST\n<size:10>PersonasApi, ProfesionesApi,</size>\n<size:10>EstudiosApi, TelefonosApi</size>" as api
+  component "Swagger UI\n<size:10>Swashbuckle 6.5 · OpenAPI 3</size>" as swagger
+}
 
-note right of MVC
-  Los controladores nunca usan
-  PersonaDbContext directamente.
-end note
+package "2. Capa de abstracción DAO  ·  contratos" as abstraccion {
+  component "<<interface>>\nInterfaces DAO\n<size:10>IPersonaRepository, IProfesionRepository,</size>\n<size:10>IEstudioRepository, ITelefonoRepository</size>" as interfaces #E3EEFB
+}
 
+package "3. Capa de acceso a datos  ·  implementación DAO" as acceso {
+  component "Repositorios\n<size:10>PersonaRepository, ProfesionRepository,</size>\n<size:10>EstudioRepository, TelefonoRepository</size>\n<size:10>(incluye el borrado en cascada)</size>" as repos
+}
+
+package "4. Capa de persistencia  ·  ORM" as persistencia {
+  component "EF Core 7 · PersonaDbContext\n<size:10>Entidades Persona, Profesion, Estudio, Telefono</size>\n<size:10>(generadas con Scaffold, Database First)</size>" as ctx
+}
+
+package "5. Capa de datos  ·  contenedor personapi-sqlserver" as datos {
+  node "Contenedor personapi-sqlserver\n<size:10>imagen mcr.microsoft.com/mssql/server:2022-latest</size>\n<size:10>linux/amd64 con Rosetta · puerto 1433:1433</size>" as contenedor {
+    database "SQL Server 2022 Express\n<size:10>base persona_db</size>" as db
+    storage "Volumen sqldata\n<size:10>/var/opt/mssql</size>" as vol
+  }
+}
+
+package "Transversal: lo usan varias capas" as transversal {
+  component "DTOs + Mappers\n<size:10>validación y conversión</size>" as dtos
+  component "Inyección de dependencias\n<size:10>Program.cs · AddScoped</size>" as di
+  component "Configuración\n<size:10>appsettings.json · cadena PersonaDb</size>" as config
+}
+
+usuario -down-> mvc : HTTP / HTML
+cliente -down-> api : HTTP / JSON
+cliente -down-> swagger
+vistas -[hidden]right- mvc
+mvc -[hidden]right- api
+api -[hidden]right- swagger
+vistas <-right- mvc : renderiza
+api <-right- swagger : documenta
+
+mvc -down-> interfaces : usa (DI)
+api -down-> interfaces : usa (DI)
+repos .up.|> interfaces : implementa
+repos -down-> ctx : consultas LINQ
+ctx -down-> contenedor : SQL / TDS · sqlserver:1433\n(red de Docker Compose)
+db -right-> vol : guarda los datos
+
+contenedor -[hidden]down- di
+dtos -[hidden]right- di
+di -[hidden]right- config
+
+legend right
+<b>Convenciones</b>
+Recuadro gris numerado: capa, de arriba hacia abajo
+Flecha sólida: llamada en tiempo de ejecución
+Flecha punteada con triángulo: implementa la interfaz
+Cada capa solo depende de la capa de abajo
+Lo transversal lo usan varias capas a la vez
+Capas 1 a 4: contenedor personapi-web (imagen .NET 7)
+Capa 5: contenedor personapi-sqlserver
+Ambos se levantan con docker compose up --build
+endlegend
 @enduml

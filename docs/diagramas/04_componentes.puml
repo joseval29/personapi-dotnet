@@ -1,0 +1,46 @@
+@startuml 04_componentes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.10.0/C4_Component.puml
+LAYOUT_TOP_DOWN()
+hide stereotype
+title Nivel 3 - Diagrama de Componentes: Aplicación Web Monolítica
+
+Person(usuario, "Usuario administrativo", "Navegador web")
+Person(desarrollador, "Desarrollador / Cliente de la API", "Swagger, curl, Postman")
+
+ContainerDb(db, "Base de datos persona_db", "SQL Server 2022 Express · contenedor personapi-sqlserver", "persona, profesion, estudios, telefono")
+
+Boundary(webapp, "Aplicación Web Monolítica (ASP.NET Core MVC, .NET 7) · contenedor personapi-web", "Contenedor") {
+  Component(mvc, "Controladores MVC", "ASP.NET Core Controller", "HomeController, PersonasController, ProfesionesController, EstudiosController, TelefonosController. Procesan formularios y eligen la vista.")
+  Component(vistas, "Vistas Razor", ".cshtml + Bootstrap", "Index, Details, Create, Edit, Delete y _Form por entidad; _Layout compartido.")
+  Component(api, "Controladores API REST", "ASP.NET Core ControllerBase [ApiController]", "PersonasApi, ProfesionesApi, EstudiosApi, TelefonosApi. Rutas /api/*, devuelven JSON y códigos HTTP.")
+  Component(swagger, "Swagger UI / OpenAPI", "Swashbuckle 6.5", "Documenta y permite probar la API en /swagger.")
+  Component(dtos, "DTOs y Mappers", "Clases C# + DataAnnotations", "PersonaDto, ProfesionDto, EstudioDto, TelefonoDto. Validan datos y convierten entidad <-> DTO.")
+  Component(interfaces, "Interfaces DAO", "Interfaces C#", "IPersonaRepository, IProfesionRepository, IEstudioRepository, ITelefonoRepository. Contrato de acceso a datos.")
+  Component(repos, "Repositorios (DAO)", "Clases C#", "PersonaRepository, ProfesionRepository, EstudioRepository, TelefonoRepository. Implementan el CRUD y el borrado en cascada.")
+  Component(ctx, "PersonaDbContext + Entidades", "Entity Framework Core 7 (Database First)", "Generado por scaffold: Persona, Profesion, Estudio, Telefono.")
+}
+
+Lay_R(usuario, desarrollador)
+Rel(usuario, mvc, "Navega y envía formularios", "HTTP")
+Rel(desarrollador, api, "Peticiones CRUD", "HTTP/JSON")
+Rel(desarrollador, swagger, "Explora y prueba", "HTTP")
+Rel(swagger, api, "Describe los endpoints de")
+Rel(mvc, vistas, "Renderiza")
+Rel(mvc, dtos, "Valida y mapea con")
+Rel(api, dtos, "Valida y mapea con")
+Rel(mvc, interfaces, "Usa (inyección de dependencias)")
+Rel(api, interfaces, "Usa (inyección de dependencias)")
+Rel_Back(interfaces, repos, "Implementa")
+Rel(repos, ctx, "Consulta y guarda con LINQ")
+Rel(ctx, db, "Lee y escribe", "SQL / TDS · sqlserver:1433")
+skinparam LegendFontColor #333333
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #BBBBBB
+legend right
+<b>Convenciones</b>
+|<#08427B> <color:#FFFFFF> Persona </color> |
+|<#85BBF0> <color:#000000> Componente </color> |
+|<#438DD5> <color:#FFFFFF> Contenedor: base de datos </color> |
+Recuadro punteado: límite del contenedor
+endlegend
+@enduml

@@ -1,0 +1,38 @@
+@startuml 07_despliegue
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.10.0/C4_Deployment.puml
+LAYOUT_LEFT_RIGHT()
+hide stereotype
+title Diagrama de Despliegue: personapi-dotnet con Docker Compose (ambiente local del equipo)
+
+Deployment_Node(mac, "MacBook del equipo", "macOS, Apple Silicon (arm64)") {
+  Deployment_Node(browser, "Navegador web", "Chrome / Safari") {
+    Container(html, "Páginas HTML y Swagger UI", "HTML, CSS, Bootstrap, jQuery Validation", "Solo muestra el HTML que genera el servidor y valida formularios en el cliente.")
+  }
+  Deployment_Node(docker, "Docker Desktop", "docker compose up --build · red interna de Compose") {
+    Deployment_Node(web, "Contenedor personapi-web", "Imagen construida desde ./personapi-dotnet (Dockerfile, .NET 7)") {
+      Container(webapp, "Aplicación Web Monolítica", "ASP.NET Core MVC · Kestrel", "Genera las vistas Razor y atiende la API REST. Puerto 5080 publicado en el Mac.")
+    }
+    Deployment_Node(cont, "Contenedor personapi-sqlserver", "mcr.microsoft.com/mssql/server:2022-latest · linux/amd64 con Rosetta") {
+      ContainerDb(db, "persona_db", "SQL Server 2022 Express", "Puerto 1433 (también publicado en el Mac)")
+    }
+    Deployment_Node(vol, "Volumen sqldata", "/var/opt/mssql") {
+      ContainerDb(files, "Archivos de datos", "MDF / LDF", "Los datos sobreviven al reiniciar los contenedores")
+    }
+  }
+}
+
+Rel(html, webapp, "Pide páginas y llama a la API", "HTTP · localhost:5080")
+Rel(webapp, db, "Lee y escribe", "EF Core / TDS · sqlserver:1433")
+Rel(db, files, "Guarda los datos en")
+
+skinparam LegendFontColor #333333
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #BBBBBB
+legend right
+<b>Convenciones</b>
+|<#FFFFFF> <color:#000000> Nodo de despliegue (recuadro) </color> |
+|<#438DD5> <color:#FFFFFF> Contenedor </color> |
+|<#438DD5> <color:#FFFFFF> Contenedor: base de datos </color> |
+"sqlserver" es el nombre del servicio en docker-compose.yml
+endlegend
+@enduml

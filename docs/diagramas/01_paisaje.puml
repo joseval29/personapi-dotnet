@@ -1,0 +1,37 @@
+@startuml 01_paisaje
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.10.0/C4_Context.puml
+LAYOUT_TOP_DOWN()
+hide stereotype
+title Paisaje de Sistemas: Laboratorio 1 - personapi-dotnet
+
+Person(usuario, "Usuario administrativo", "Gestiona los registros desde el navegador.")
+Person(equipo, "Equipo de desarrollo", "Estudiantes que construyen, prueban y publican el monolito.")
+Person(profesor, "Profesor", "Revisa el código y la entrega (tag v1.0.0).")
+
+Boundary(empresa, "Laboratorio de Arquitectura de Software", "Organización") {
+  System(personapi, "personapi-dotnet", "Monolito MVC + DAO: CRUD de personas, profesiones, estudios y teléfonos con vistas web y API REST.")
+}
+
+Person(clientes, "Desarrollador / Cliente de la API", "Consume y prueba la API REST con Swagger UI, curl o Postman.")
+System_Ext(github, "GitHub", "Repositorio público personapi-dotnet: código, README, scripts DDL/DML y tag de entrega.")
+System_Ext(nuget, "NuGet", "Paquetes Entity Framework Core 7 y Swashbuckle.")
+System_Ext(mcr, "Microsoft Container Registry", "Imágenes oficiales de SQL Server 2022 y de .NET 7 (SDK y ASP.NET).")
+
+Rel(usuario, personapi, "Administra registros", "HTTP / HTML")
+Rel(clientes, personapi, "Envía peticiones CRUD", "HTTP / JSON")
+Rel(equipo, personapi, "Desarrolla, prueba y despliega")
+Rel(equipo, github, "Publica commits y el tag", "Git")
+Rel(profesor, github, "Revisa la entrega", "HTTPS")
+Rel(equipo, nuget, "Descarga dependencias al compilar", "dotnet restore")
+Rel(equipo, mcr, "Descarga las imágenes de SQL Server y .NET", "docker compose up --build")
+skinparam LegendFontColor #333333
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #BBBBBB
+legend right
+<b>Convenciones</b>
+|<#08427B> <color:#FFFFFF> Persona </color> |
+|<#1168BD> <color:#FFFFFF> Sistema de software </color> |
+|<#999999> <color:#FFFFFF> Sistema externo </color> |
+Recuadro punteado: límite de la organización
+endlegend
+@enduml
