@@ -16,5 +16,16 @@ services:
       - sqldata:/var/opt/mssql
     restart: unless-stopped
 
+  web:
+    build: ./personapi-dotnet
+    container_name: personapi-web
+    environment:
+      ConnectionStrings__PersonaDb: "Server=sqlserver,1433;Database=persona_db;User Id=sa;Password=PersonaApi2026!;TrustServerCertificate=true"
+    ports:
+      - "5080:5080"
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
+
 volumes:
   sqldata:
