@@ -8,7 +8,8 @@
 **Fecha:** 29 de octubre de 2026\
 **Ciudad:** Bogotá D.C.
 
-**Repositorio:** https://github.com/joseval29/personapi-dotnet
+**Repositorio:** https://github.com/joseval29/personapi-dotnet\
+**Entrega (tag v1.0.0):** https://github.com/joseval29/personapi-dotnet/tree/v1.0.0
 
 ---
 
@@ -311,7 +312,7 @@ Trabajamos en macOS con chip Apple Silicon. La guía del profesor está pensada 
 
 ### 3.11 Control de versiones y entrega
 
-**Paso 35. Commits y tag.** Un commit por etapa (monolito, capturas, documento). El repositorio es público en GitHub. La entrega se marca con el tag anotado `v1.0.0` y el mensaje "Entrega Laboratorio 1", que se crea al cerrar el laboratorio.
+**Paso 35. Commits y tag.** Un commit por etapa (monolito, capturas, documento). El repositorio es público en GitHub. La entrega se marca con el tag anotado `v1.0.0` y el mensaje "Entrega Laboratorio 1".
 
 ---
 
@@ -355,7 +356,3 @@ Docker Inc. *Docker Desktop documentation*. https://docs.docker.com/desktop/
 Martin, R. C. (2017). *Clean Architecture: A Craftsman's Guide to Software Structure and Design*. Prentice Hall.
 
 Fowler, M. (2002). *Patterns of Enterprise Application Architecture*. Addison-Wesley.
-
-[Diapositivas del curso de Arquitectura de Software: completar con la sesión y la fecha.]
-
-[Guía del laboratorio y enlaces que usó el grupo (hdeleon.net, dev.to, c-sharpcorner): completar con las URL exactas.]
