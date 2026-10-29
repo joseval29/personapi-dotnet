@@ -54,26 +54,6 @@ Las restricciones están en `scripts/01_ddl.sql`.
 
 ### 2.2 Arquitectura por capas
 
-```
-Navegador / Swagger UI
-        │
-        ▼
-Controladores MVC (PersonasController…)   Controladores API (PersonasApiController…)
-        │                                         │
-        └──────────────┬──────────────────────────┘
-                       ▼
-        Interfaces DAO (IPersonaRepository…)
-                       │
-                       ▼
-        Repositorios (PersonaRepository…)
-                       │
-                       ▼
-        EF Core (PersonaDbContext, entidades)
-                       │
-                       ▼
-        SQL Server 2022 Express (Docker, persona_db)
-```
-
 Los controladores nunca usan `PersonaDbContext` directamente: dependen de las interfaces, y solo los repositorios hablan con EF Core.
 
 ![Arquitectura por capas en PlantUML](diagramas/08_arquitectura_capas.png)
