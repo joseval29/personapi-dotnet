@@ -76,7 +76,9 @@ Controladores MVC (PersonasController…)   Controladores API (PersonasApiContro
 
 Los controladores nunca usan `PersonaDbContext` directamente: dependen de las interfaces, y solo los repositorios hablan con EF Core.
 
-El mismo diagrama en PlantUML está en [`diagramas/08_arquitectura_capas.puml`](diagramas/08_arquitectura_capas.puml).
+![Arquitectura por capas en PlantUML](diagramas/08_arquitectura_capas.png)
+
+Fuente del diagrama: [`diagramas/08_arquitectura_capas.puml`](diagramas/08_arquitectura_capas.puml).
 
 ### 2.3 Clases principales
 
