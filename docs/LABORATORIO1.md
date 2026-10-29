@@ -76,6 +76,8 @@ Controladores MVC (PersonasController…)   Controladores API (PersonasApiContro
 
 Los controladores nunca usan `PersonaDbContext` directamente: dependen de las interfaces, y solo los repositorios hablan con EF Core.
 
+El mismo diagrama en PlantUML está en [`diagramas/08_arquitectura_capas.puml`](diagramas/08_arquitectura_capas.puml).
+
 ### 2.3 Clases principales
 
 | Clase | Responsabilidad |
@@ -123,6 +125,40 @@ personapi-dotnet/                  (raíz del repositorio, git)
 - **Adaptación del modelo de MySQL a SQL Server.** Los `ENUM` se cambiaron por restricciones `CHECK` (por ejemplo, `CHECK (genero IN ('M', 'F'))`), y `TEXT` por `VARCHAR(MAX)`, porque `TEXT` está obsoleto en SQL Server.
 - **Llave compuesta en `estudios`.** En el contexto se usa `HasKey(e => new { e.IdProf, e.CcPer })`, la forma natural de representar una relación N:M.
 - **Ajustes posteriores al Scaffold.** No hizo falta cambiar nombres de propiedades ni tipos: las entidades generadas coinciden con las de la referencia.
+
+### 2.7 Diagramas C4
+
+Los diagramas siguen el modelo C4: contexto, contenedores, componentes, código y dinámicos.
+
+**Contexto (nivel 1)**
+
+![Contexto](diagramas/02_contexto.svg)
+
+**Contenedores (nivel 2)**
+
+![Contenedores](diagramas/03_contenedores.svg)
+
+**Componentes (nivel 3)**
+
+![Componentes](diagramas/04_componentes.svg)
+
+**Código (nivel 4)**
+
+![Código](diagramas/05_codigo.svg)
+
+**Dinámico: crear persona por la API**
+
+![Crear persona por la API](diagramas/06a_dinamico_crear_persona_api.svg)
+
+**Dinámico: eliminar persona desde MVC (borrado en cascada)**
+
+![Eliminar persona desde MVC](diagramas/06b_dinamico_eliminar_persona_mvc.svg)
+
+**Despliegue**
+
+![Despliegue](diagramas/07_despliegue.svg)
+
+Vista general del paisaje del sistema: ![Paisaje](diagramas/01_paisaje.svg)
 
 ---
 

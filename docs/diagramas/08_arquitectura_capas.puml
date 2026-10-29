@@ -1,0 +1,39 @@
+@startuml 08_arquitectura_capas
+title Arquitectura por capas - personapi-dotnet
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam componentStyle rectangle
+skinparam ArrowColor #555555
+skinparam ComponentBackgroundColor #E6F1FB
+skinparam ComponentBorderColor #185FA5
+skinparam DatabaseBackgroundColor #EEEDFE
+skinparam DatabaseBorderColor #534AB7
+skinparam PackageBorderColor #888780
+skinparam PackageStyle rectangle
+
+component "Navegador / Swagger UI" as NAV
+
+package "personapi-dotnet (monolito)" {
+  component "Controladores MVC\nPersonasController..." as MVC
+  component "Controladores API\nPersonasApiController..." as API
+  component "Interfaces DAO\nIPersonaRepository..." as IDAO
+  component "Repositorios\nPersonaRepository..." as REPO
+  component "EF Core\nPersonaDbContext, entidades" as EF
+}
+
+database "SQL Server 2022 Express\n(Docker, persona_db)" as DB
+
+NAV --> MVC : vistas HTML
+NAV --> API : Swagger UI / JSON
+MVC --> IDAO : usa
+API --> IDAO : usa
+IDAO <|.. REPO : implementa
+REPO --> EF : consulta
+EF --> DB : TCP 1433
+
+note right of MVC
+  Los controladores nunca usan
+  PersonaDbContext directamente.
+end note
+
+@enduml
